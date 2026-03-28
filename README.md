@@ -31,7 +31,7 @@
 
 ```bash
 # 克隆仓库
-git clone https://github.com/YOUR_USERNAME/PublishTool.git
+git clone https://github.com/niezhili/PublishTool.git
 cd PublishTool
 
 # 安装依赖
