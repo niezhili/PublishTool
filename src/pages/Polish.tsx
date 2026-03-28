@@ -15,7 +15,7 @@ export function PolishPage() {
   const { originalText, setOriginalText, polishedText, setPolishedText, polishingRequirement, setPolishingRequirement, generatedImages, setGeneratedImages, isLoading, setIsLoading, error, setError } = useAppStore()
 
   // 生成封面的prompt输入状态
-  const [coverPrompt, setCoverPrompt] = useState('根据文章内容，生成192*128px的封面')
+  const [coverPrompt, setCoverPrompt] = useState('根据文章内容，生成192*128px同比例的封面')
 
   // 使用Hook进行API调用
   const { polish, isLoading: hookIsLoading, error: hookError } = useTextPolish()
@@ -82,8 +82,16 @@ export function PolishPage() {
 
       // 从 prompt 中解析尺寸（如 "192*128px"、"192x128"、"1920×1080"），优先级高于默认值
       const sizeMatch = coverPrompt.match(/(\d+)\s*[*x×]\s*(\d+)\s*px?/i)
-      const width = sizeMatch ? parseInt(sizeMatch[1], 10) : 192
-      const height = sizeMatch ? parseInt(sizeMatch[2], 10) : 128
+      let width = sizeMatch ? parseInt(sizeMatch[1], 10) : 192
+      let height = sizeMatch ? parseInt(sizeMatch[2], 10) : 128
+
+      // API 要求最少 3,686,400 像素，不足时按原比例等比放大
+      const MIN_PIXELS = 3686400
+      if (width * height < MIN_PIXELS) {
+        const scale = Math.ceil(Math.sqrt(MIN_PIXELS / (width * height)) * 100) / 100
+        width = Math.ceil(width * scale)
+        height = Math.ceil(height * scale)
+      }
 
       const images = await generate(coverGenerationPrompt, width, height, 4)
       if (images && images.length > 0) {
