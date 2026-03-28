@@ -90,11 +90,9 @@ export function PolishPage() {
         setGeneratedImages(images)
         console.log('[PolishPage] 图片生成成功，共', images.length, '张')
         setError(undefined)
-      } else {
-        setError(imageError || '生成图片失败，请检查API配置')
       }
     } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : '未知错误'
+      const errorMsg = err instanceof Error ? err.message : '生成图片失败，请检查API配置'
       setError(errorMsg)
       console.error('[PolishPage] 图片生成异常:', errorMsg)
     }

@@ -48,13 +48,11 @@ export function useImageGeneration() {
       console.log('[useImageGeneration] 调用成功，生成了', result.images.length, '张图片')
       return result.images
     } catch (err) {
-      // 捕获错误并保存到状态
       const errorMessage = err instanceof Error ? err.message : '未知错误'
       console.error('[useImageGeneration] 调用失败:', errorMessage)
       setError(errorMessage)
-      return null
+      throw err  // 重新抛出，让调用方能拿到真实错误
     } finally {
-      // 无论成功失败都停止loading
       setIsLoading(false)
     }
   }
