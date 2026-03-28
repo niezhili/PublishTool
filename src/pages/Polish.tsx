@@ -80,8 +80,8 @@ export function PolishPage() {
     try {
       const coverGenerationPrompt = `${coverPrompt}\n\n文章内容：\n${polishedText}`
 
-      // 使用1920x1920尺寸以满足API要求，前端会缩小显示
-      const images = await generate(coverGenerationPrompt, 1920, 1920, 4)
+      // 使用192x128尺寸生成封面图片
+      const images = await generate(coverGenerationPrompt, 192, 128, 4)
       if (images && images.length > 0) {
         setGeneratedImages(images)
         console.log('[PolishPage] 图片生成成功，共', images.length, '张')
@@ -257,14 +257,14 @@ export function PolishPage() {
               {/* 图片预览 */}
               {generatedImages.length > 0 && (
                 <div className="flex-1 overflow-y-auto">
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="flex flex-col gap-3">
                     {generatedImages.map((img, idx) => (
                       <div key={idx} className="border rounded overflow-hidden bg-gray-50 flex flex-col">
                         <div className="bg-white p-2">
                           <img
                             src={img}
                             alt={`生成的封面 ${idx + 1}`}
-                            className="w-full aspect-[3/2] object-cover rounded"
+                            className="w-full aspect-[3/2] object-contain rounded"
                           />
                         </div>
                         <button

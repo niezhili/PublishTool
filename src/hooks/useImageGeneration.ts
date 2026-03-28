@@ -23,8 +23,8 @@ export function useImageGeneration() {
    */
   const generate = async (
     prompt: string,
-    width: number = 1920,
-    height: number = 1920,
+    width: number = 192,
+    height: number = 128,
     count: number = 4
   ): Promise<string[] | null> => {
     setIsLoading(true)
