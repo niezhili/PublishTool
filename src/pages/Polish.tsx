@@ -80,8 +80,12 @@ export function PolishPage() {
     try {
       const coverGenerationPrompt = `${coverPrompt}\n\n文章内容：\n${polishedText}`
 
-      // 使用192x128尺寸生成封面图片
-      const images = await generate(coverGenerationPrompt, 192, 128, 4)
+      // 从 prompt 中解析尺寸（如 "192*128px"、"192x128"、"1920×1080"），优先级高于默认值
+      const sizeMatch = coverPrompt.match(/(\d+)\s*[*x×]\s*(\d+)\s*px?/i)
+      const width = sizeMatch ? parseInt(sizeMatch[1], 10) : 192
+      const height = sizeMatch ? parseInt(sizeMatch[2], 10) : 128
+
+      const images = await generate(coverGenerationPrompt, width, height, 4)
       if (images && images.length > 0) {
         setGeneratedImages(images)
         console.log('[PolishPage] 图片生成成功，共', images.length, '张')
