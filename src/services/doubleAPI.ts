@@ -11,21 +11,19 @@ class DoubleAPI {
   private imageClient: AxiosInstance
 
   constructor() {
-    // 文本润色API客户端
+    // 文本润色API客户端（通过 /api/text-polish 同源代理，避免跨域）
     this.textClient = axios.create({
-      baseURL: import.meta.env.VITE_TEXT_POLISH_API_URL,
+      baseURL: '/api/text-polish',
       headers: {
-        'Authorization': `Bearer ${import.meta.env.VITE_TEXT_POLISH_API_KEY}`,
         'Content-Type': 'application/json',
       },
       timeout: 30000, // 30秒超时
     })
 
-    // 图片生成API客户端
+    // 图片生成API客户端（通过 /api/image-gen 同源代理，避免跨域）
     this.imageClient = axios.create({
-      baseURL: import.meta.env.VITE_IMAGE_GEN_API_URL,
+      baseURL: '/api/image-gen',
       headers: {
-        'Authorization': `Bearer ${import.meta.env.VITE_IMAGE_GEN_API_KEY}`,
         'Content-Type': 'application/json',
       },
       timeout: 60000, // 60秒超时（图片生成较慢）
