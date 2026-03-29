@@ -19,7 +19,7 @@ export function PolishPage() {
 
   // 使用Hook进行API调用
   const { polish, isLoading: hookIsLoading, error: hookError } = useTextPolish()
-  const { generate, isLoading: imageIsLoading, error: imageError } = useImageGeneration()
+  const { generate, isLoading: imageIsLoading } = useImageGeneration()
 
   const handleDownloadImage = async (imageSource: string, index: number) => {
     try {
@@ -76,7 +76,8 @@ export function PolishPage() {
       setError('请输入图片描述')
       return
     }
-
+    // 每次点击先清除上次的错误信息
+    setError(undefined)
     try {
       const coverGenerationPrompt = `${coverPrompt}\n\n文章内容：\n${polishedText}`
 

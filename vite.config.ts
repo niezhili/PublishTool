@@ -25,10 +25,8 @@ export default defineConfig(({ mode }) => {
           target: 'https://ark.cn-beijing.volces.com',
           changeOrigin: true,
           rewrite: () => '/api/v3/chat/completions',
-          configure: (proxy) => {
-            proxy.on('proxyReq', (proxyReq) => {
-              proxyReq.setHeader('Authorization', `Bearer ${env.TEXT_POLISH_API_KEY}`)
-            })
+          headers: {
+            'Authorization': `Bearer ${env.TEXT_POLISH_API_KEY}`,
           },
         },
         // 本地开发时将 /api/image-gen 代理到豆包 Images API
@@ -36,10 +34,8 @@ export default defineConfig(({ mode }) => {
           target: 'https://ark.cn-beijing.volces.com',
           changeOrigin: true,
           rewrite: () => '/api/v3/images/generations',
-          configure: (proxy) => {
-            proxy.on('proxyReq', (proxyReq) => {
-              proxyReq.setHeader('Authorization', `Bearer ${env.IMAGE_GEN_API_KEY}`)
-            })
+          headers: {
+            'Authorization': `Bearer ${env.IMAGE_GEN_API_KEY}`,
           },
         },
       },

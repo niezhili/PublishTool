@@ -195,7 +195,9 @@ class DoubleAPI {
       // API返回了错误状态码
       if (error.response) {
         const status = error.response.status
-        const message = (error.response.data as any)?.message || (error.response.data as any)?.error?.message || '请求失败'
+        // 兑容 { message }, { error: { message } }, { error: 'string' } 三种返回格式
+        const data = error.response.data as any
+        const message = data?.message || data?.error?.message || (typeof data?.error === 'string' ? data.error : null) || '请求失败'
 
         console.error(`[DoubleAPI] ${operation}失败 (${status}):`, {
           status,
