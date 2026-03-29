@@ -15,7 +15,7 @@ export function PolishPage() {
   const { originalText, setOriginalText, polishedText, setPolishedText, polishingRequirement, setPolishingRequirement, generatedImages, setGeneratedImages, isLoading, setIsLoading, error, setError } = useAppStore()
 
   // 生成封面的prompt输入状态
-  const [coverPrompt, setCoverPrompt] = useState('根据文章内容，生成192*128px同比例的封面')
+  const [coverPrompt, setCoverPrompt] = useState('根据文章内容，生成3:2比例的封面')
 
   // 使用Hook进行API调用
   const { polish, isLoading: hookIsLoading, error: hookError } = useTextPolish()
@@ -80,18 +80,17 @@ export function PolishPage() {
     try {
       const coverGenerationPrompt = `${coverPrompt}\n\n文章内容：\n${polishedText}`
 
-      // 从 prompt 中解析尺寸（如 "192*128px"、"192x128"、"1920×1080"），优先级高于默认值
-      const sizeMatch = coverPrompt.match(/(\d+)\s*[*x×]\s*(\d+)\s*px?/i)
-      let width = sizeMatch ? parseInt(sizeMatch[1], 10) : 192
-      let height = sizeMatch ? parseInt(sizeMatch[2], 10) : 128
+      // 从 prompt 中解析比例（如 "3:2"、"16:9"），优先级高于默认比例 3:2
+      const ratioMatch = coverPrompt.match(/(\d+)\s*[:/]\s*(\d+)/)
+      const ratioW = ratioMatch ? parseInt(ratioMatch[1], 10) : 3
+      const ratioH = ratioMatch ? parseInt(ratioMatch[2], 10) : 2
 
-      // API 要求最少 3,686,400 像素，不足时按原比例等比放大
+      // API 要求最少 3,686,400 像素，按比例求最小满足条件的整数倍尺寸
+      // width = ratioW * k, height = ratioH * k => k >= sqrt(MIN_PIXELS / (ratioW * ratioH))
       const MIN_PIXELS = 3686400
-      if (width * height < MIN_PIXELS) {
-        const scale = Math.ceil(Math.sqrt(MIN_PIXELS / (width * height)) * 100) / 100
-        width = Math.ceil(width * scale)
-        height = Math.ceil(height * scale)
-      }
+      const k = Math.ceil(Math.sqrt(MIN_PIXELS / (ratioW * ratioH)))
+      const width = ratioW * k
+      const height = ratioH * k
 
       const images = await generate(coverGenerationPrompt, width, height, 4)
       if (images && images.length > 0) {
@@ -221,7 +220,7 @@ export function PolishPage() {
                   type="text"
                   value={coverPrompt}
                   onChange={(e) => setCoverPrompt(e.target.value)}
-                  placeholder="例如：根据文章内容，生成192*128px的封面"
+                  placeholder="例如：根据文章内容，生成3:2比例的封面"
                   disabled={imageIsLoading}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
                 />
