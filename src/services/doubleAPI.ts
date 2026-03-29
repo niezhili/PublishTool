@@ -108,30 +108,23 @@ class DoubleAPI {
         count: request.count
       })
 
-      // 部分图片接口会忽略 n 参数，因此按张数并发请求，确保前端真正拿到 count 张图。
-      const responses = await Promise.all(
-        Array.from({ length: request.count }, () =>
-          this.imageClient.post('', {
-            model: import.meta.env.VITE_IMAGE_MODEL_NAME,
-            prompt: request.prompt,
-            size: `${request.width}x${request.height}`,
-            n: 1,
-          })
-        )
-      )
-
-      const images = responses.flatMap((response, index) => {
-        console.log('[DoubleAPI] 图片生成API返回', {
-          index: index + 1,
-          status: response.status,
-          hasData: !!response.data,
-        })
-
-        return this.extractImagesFromResponse(response.data)
+      // 将 count 传给服务端代理，由服务端统一并发请求，避免前端多次调用 Serverless 函数
+      const response = await this.imageClient.post('', {
+        model: import.meta.env.VITE_IMAGE_MODEL_NAME,
+        prompt: request.prompt,
+        size: `${request.width}x${request.height}`,
+        n: request.count,
       })
 
+      console.log('[DoubleAPI] 图片生成API返回', {
+        status: response.status,
+        hasData: !!response.data,
+      })
+
+      const images = this.extractImagesFromResponse(response.data)
+
       if (images.length === 0) {
-        console.error('[DoubleAPI] 无法识别的图片API响应格式:', responses.map((response) => response.data))
+        console.error('[DoubleAPI] 无法识别的图片API响应格式:', response.data)
         throw new Error('API返回格式不正确，无法识别图片')
       }
 

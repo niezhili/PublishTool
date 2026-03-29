@@ -18,6 +18,9 @@ export default async function handler(req: any, res: any) {
   }
 
   try {
+    const controller = new AbortController()
+    const timer = setTimeout(() => controller.abort(), 55000) // 55s，留 5s 余量给 Vercel
+
     const response = await fetch(apiUrl, {
       method: 'POST',
       headers: {
@@ -25,12 +28,19 @@ export default async function handler(req: any, res: any) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(req.body),
+      signal: controller.signal,
     })
+    clearTimeout(timer)
 
     const data = await response.json()
     res.status(response.status).json(data)
-  } catch (error) {
-    console.error('[text-polish] proxy error:', error)
-    res.status(500).json({ error: 'Failed to proxy API request' })
+  } catch (error: any) {
+    if (error?.name === 'AbortError') {
+      console.error('[text-polish] upstream request timed out')
+      res.status(504).json({ error: 'Upstream API timed out' })
+    } else {
+      console.error('[text-polish] proxy error:', error)
+      res.status(500).json({ error: 'Failed to proxy API request', detail: String(error) })
+    }
   }
 }

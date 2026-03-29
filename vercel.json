@@ -1,5 +1,13 @@
 {
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
-  "framework": "vite"
+  "framework": "vite",
+  "functions": {
+    "api/text-polish.ts": {
+      "maxDuration": 60
+    },
+    "api/image-gen.ts": {
+      "maxDuration": 60
+    }
+  }
 }
