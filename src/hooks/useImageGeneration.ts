@@ -19,13 +19,15 @@ export function useImageGeneration() {
    * @param width - 图片宽度，默认192px
    * @param height - 图片高度，默认128px
    * @param count - 生成数量，默认4张
+   * @param model - 可选，指定图像生成模型，不传则使用环境变量默认值
    * @returns 生成的图片列表，失败时返回null
    */
   const generate = async (
     prompt: string,
     width: number = 192,
     height: number = 128,
-    count: number = 4
+    count: number = 4,
+    model?: string
   ): Promise<string[] | null> => {
     setIsLoading(true)
     setError(null)
@@ -38,12 +40,13 @@ export function useImageGeneration() {
     }
 
     try {
-      console.log('[useImageGeneration] 开始调用API', { prompt, width, height, count })
+      console.log('[useImageGeneration] 开始调用API', { prompt, width, height, count, model })
       const result = await doubleAPI.generateImages({
         prompt,
         width,
         height,
         count,
+        model,
       })
       console.log('[useImageGeneration] 调用成功，生成了', result.images.length, '张图片')
       return result.images

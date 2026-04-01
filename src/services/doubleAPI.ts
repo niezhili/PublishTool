@@ -110,7 +110,7 @@ class DoubleAPI {
 
       // 将 count 传给服务端代理，由服务端统一并发请求，避免前端多次调用 Serverless 函数
       const response = await this.imageClient.post('', {
-        model: import.meta.env.VITE_IMAGE_MODEL_NAME,
+        model: request.model ?? import.meta.env.VITE_IMAGE_MODEL_NAME,
         prompt: request.prompt,
         size: `${request.width}x${request.height}`,
         n: request.count,

@@ -13,6 +13,7 @@ export interface ImageGenerationRequest {
   width: number
   height: number
   count: number
+  model?: string
 }
 
 export interface ImageGenerationResponse {

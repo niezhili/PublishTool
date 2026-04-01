@@ -17,6 +17,15 @@ export function PolishPage() {
   // 生成封面的prompt输入状态
   const [coverPrompt, setCoverPrompt] = useState('根据文章内容，生成3:2比例的封面')
 
+  // 图像生成模型列表（从环境变量解析）及当前选中模型
+  const imageModelOptions = (import.meta.env.VITE_IMAGE_MODEL_NAMES as string | undefined)
+    ?.split(',')
+    .map((s) => s.trim())
+    .filter(Boolean) ?? [import.meta.env.VITE_IMAGE_MODEL_NAME as string]
+  const [selectedImageModel, setSelectedImageModel] = useState(
+    import.meta.env.VITE_IMAGE_MODEL_NAME as string ?? imageModelOptions[0]
+  )
+
   // 使用Hook进行API调用
   const { polish, isLoading: hookIsLoading, error: hookError } = useTextPolish()
   const { generate, isLoading: imageIsLoading } = useImageGeneration()
@@ -93,7 +102,7 @@ export function PolishPage() {
       const width = ratioW * k
       const height = ratioH * k
 
-      const images = await generate(coverGenerationPrompt, width, height, 4)
+      const images = await generate(coverGenerationPrompt, width, height, 4, selectedImageModel)
       if (images && images.length > 0) {
         setGeneratedImages(images)
         console.log('[PolishPage] 图片生成成功，共', images.length, '张')
@@ -211,47 +220,69 @@ export function PolishPage() {
             </div>
 
             {/* 生成封面的prompt输入和按钮 - 与左列样式一致 */}
-            <div className="bg-white rounded-lg shadow p-4 flex gap-3 items-end">
-              {/* 图片描述输入框 */}
-              <div className="flex-1">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  图片描述
-                </label>
-                <input
-                  type="text"
-                  value={coverPrompt}
-                  onChange={(e) => setCoverPrompt(e.target.value)}
-                  placeholder="例如：根据文章内容，生成3:2比例的封面"
-                  disabled={imageIsLoading}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
-                />
-              </div>
+            <div className="bg-white rounded-lg shadow p-4 flex flex-col gap-3">
+              {/* 模型选择 */}
+              {imageModelOptions.length > 1 && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    图像模型
+                  </label>
+                  <select
+                    value={selectedImageModel}
+                    onChange={(e) => setSelectedImageModel(e.target.value)}
+                    disabled={imageIsLoading}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                  >
+                    {imageModelOptions.map((name) => (
+                      <option key={name} value={name}>{name}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
 
-              {/* 生成按钮 */}
-              <button
-                onClick={handleGenerateCover}
-                disabled={!polishedText.trim() || !coverPrompt.trim() || imageIsLoading}
-                className={`
-                  px-4 py-2 rounded-lg font-medium text-white whitespace-nowrap
-                  transition-all duration-200
-                  ${
-                    !polishedText.trim() || !coverPrompt.trim() || imageIsLoading
-                      ? 'bg-gray-400 cursor-not-allowed'
-                      : 'bg-green-600 hover:bg-green-700 active:scale-95'
-                  }
-                `}
-              >
-                {imageIsLoading ? (
-                  <span className="flex items-center justify-center">
-                    <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                  </span>
-                ) : (
-                  '生成封面'
-                )}
-              </button>
+              {/* 图片描述 + 生成按钮 */}
+              <div className="flex gap-3 items-end">
+                {/* 图片描述输入框 */}
+                <div className="flex-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    图片描述
+                  </label>
+                  <input
+                    type="text"
+                    value={coverPrompt}
+                    onChange={(e) => setCoverPrompt(e.target.value)}
+                    placeholder="例如：根据文章内容，生成3:2比例的封面"
+                    disabled={imageIsLoading}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                  />
+                </div>
+
+                {/* 生成按钮 */}
+                <button
+                  onClick={handleGenerateCover}
+                  disabled={!polishedText.trim() || !coverPrompt.trim() || imageIsLoading}
+                  className={`
+                    px-4 py-2 rounded-lg font-medium text-white whitespace-nowrap
+                    transition-all duration-200
+                    ${
+                      !polishedText.trim() || !coverPrompt.trim() || imageIsLoading
+                        ? 'bg-gray-400 cursor-not-allowed'
+                        : 'bg-green-600 hover:bg-green-700 active:scale-95'
+                    }
+                  `}
+                >
+                  {imageIsLoading ? (
+                    <span className="flex items-center justify-center">
+                      <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                    </span>
+                  ) : (
+                    '生成封面'
+                  )}
+                </button>
+              </div>
             </div>
           </div>
 
